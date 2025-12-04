@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Pipeline / Workflow - Jogo "Quem Quer Ser Milionário" em Prolog</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #0f172a;
+            color: #e5e7eb;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+            padding: 24px;
+            text-align: center;
+            color: #f9fafb;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 0.05em;
+        }
+        header h2 {
+            margin: 6px 0 0 0;
+            font-size: 16px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        main {
+            max-width: 960px;
+            margin: 24px auto 40px;
+            background: #020617;
+            border-radius: 12px;
+            padding: 24px 28px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.6);
+            border: 1px solid #1f2937;
+        }
+        h2 {
+            color: #93c5fd;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 6px;
+            margin-top: 24px;
+        }
+        h3 {
+            color: #bfdbfe;
+            margin-top: 18px;
+        }
+        p {
+            margin: 8px 0;
+        }
+        ul, ol {
+            margin: 6px 0 10px 22px;
+        }
+        code {
+            font-family: "Fira Code", Consolas, Monaco, "Courier New", monospace;
+            background: #020617;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        pre {
+            background: #020617;
+            border-radius: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            border: 1px solid #1f2937;
+            font-size: 0.9em;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        .tag {
+            display: inline-block;
+            background: #111827;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9ca3af;
+            margin-right: 4px;
+        }
+        .box {
+            border-radius: 10px;
+            border: 1px solid #1f2937;
+            background: #020617;
+            padding: 14px 16px;
+            margin: 12px 0;
+        }
+        .box-title {
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 6px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            margin-bottom: 10px;
+        }
+        th, td {
+            border: 1px solid #1f2937;
+            padding: 8px;
+            font-size: 0.95em;
+        }
+        th {
+            background: #020617;
+            color: #e5e7eb;
+            text-align: left;
+        }
+        tr:nth-child(even) td {
+            background: #020617;
+        }
+        .ascii {
+            font-family: "Fira Code", monospace;
+            white-space: pre;
+            font-size: 0.8em;
+            background: #020617;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #1f2937;
+            margin: 10px 0;
+        }
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 18px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Pipeline / Workflow do Jogo "Quem Quer Ser Milionário"</h1>
+    <h2>Implementação em Prolog · Lógica e Inteligência Artificial</h2>
+</header>
+
+<main>
+    <section>
+        <span class="tag">Visão geral</span>
+        <h2>1. Visão Geral do Pipeline</h2>
+        <p>
+            O programa implementa uma versão textual do jogo <strong>“Quem Quer Ser Milionário?”</strong> em Prolog,
+            organizada como um pipeline lógico e recursivo. O fluxo principal pode ser resumido nas seguintes etapas:
+        </p>
+        <ol>
+            <li>Inicialização do jogo e do ambiente lógico;</li>
+            <li>Carregamento da base de conhecimento das perguntas;</li>
+            <li>Configuração das ajudas disponíveis para o jogador;</li>
+            <li>Execução do <em>loop</em> recursivo principal de jogo;</li>
+            <li>Processamento de respostas (corretas ou incorretas);</li>
+            <li>Aplicação de regras de inferência (Modus Ponens, Modus Tollens, Modus Mistaken);</li>
+            <li>Tratamento das ajudas (50/50, público, telefone);</li>
+            <li>Gestão de patamares de segurança e prémios;</li>
+            <li>Determinação do fim de jogo (vitória, derrota ou desistência);</li>
+            <li>Apresentação através de interface textual (ASCII art, mensagens, estado do jogo).</li>
+        </ol>
+        <p>
+            O fluxo é controlado sobretudo pelo predicado <code>jogar/0</code> e pelo predicado recursivo
+            <code>jogar_nivel/4</code>.
+        </p>
+    </section>
+
+    <section>
+        <span class="tag">Arquitetura</span>
+        <h2>2. Arquitetura Modular do Programa</h2>
+        <p>
+            O sistema foi estruturado em módulos para separar responsabilidades e facilitar a compreensão:
+        </p>
+        <table>
+            <thead>
+            <tr>
+                <th>Módulo</th>
+                <th>Ficheiro</th>
+                <th>Responsabilidade principal</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><strong>Controlo de Jogo</strong></td>
+                <td><code>milionario.pl</code></td>
+                <td>Predicado <code>jogar/0</code>, loop recursivo <code>jogar_nivel/4</code>, processamento de ações.</td>
+            </tr>
+            <tr>
+                <td><strong>Base de Conhecimento</strong></td>
+                <td><code>perguntas.pl</code></td>
+                <td>Armazena as 20 perguntas, opções, resposta correta, nível e valor monetário.</td>
+            </tr>
+            <tr>
+                <td><strong>Ajudas</strong></td>
+                <td><code>ajudas.pl</code></td>
+                <td>Implementa as ajudas 50/50, público e telefone, bem como gestão de ajudas disponíveis.</td>
+            </tr>
+            <tr>
+                <td><strong>Interface</strong></td>
+                <td><code>interface.pl</code></td>
+                <td>ASCII art, apresentação de perguntas, estado do jogo, distribuição do público, etc.</td>
+            </tr>
+            <tr>
+                <td><strong>Lógica</strong></td>
+                <td><code>logica.pl</code></td>
+                <td>Modela as regras de inferência: Modus Ponens, Modus Tollens e Modus Mistaken.</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <span class="tag">Fluxo</span>
+        <h2>3. Pipeline Detalhado do Workflow</h2>
+
+        <h3>3.1. Etapa 1 – Inicialização</h3>
+        <p>
+            O jogo começa com a chamada ao predicado principal:
+        </p>
+        <pre><code>?- jogar.</code></pre>
+        <p>As ações principais desta etapa são:</p>
+        <ul>
+            <li>Mostrar o <em>banner</em> inicial através do módulo <code>interface.pl</code>;</li>
+            <li>Inicializar a lista de ajudas disponíveis (<code>inicializar_ajudas/1</code>);</li>
+            <li>Iniciar o ciclo de jogo no nível 1, com prémio inicial 0 e sem patamar de segurança:</li>
+        </ul>
+        <pre><code>jogar :-
+    banner,
+    inicializar_ajudas(Ajudas),
+    jogar_nivel(1, 0, 0, Ajudas).</code></pre>
+
+        <h3>3.2. Etapa 2 – Carregamento da Pergunta do Nível</h3>
+        <p>O predicado <code>jogar_nivel/4</code> é responsável por gerir cada nível do jogo:</p>
+        <ul>
+            <li>Verifica se o nível atual ultrapassa o número total de perguntas (condição de vitória);</li>
+            <li>Obtém a pergunta correspondente ao nível a partir de <code>perguntas.pl</code>:</li>
+        </ul>
+        <pre><code>pergunta(Nivel, Texto, Opcoes, Correta, _N, PremioPergunta).</code></pre>
+        <p>
+            Também é verificado se o nível atual corresponde a um <strong>patamar de segurança</strong>.
+            Caso seja um patamar, o valor de segurança é atualizado.
+        </p>
+
+        <h3>3.3. Etapa 3 – Apresentação do Estado e da Pergunta</h3>
+        <p>
+            O módulo de interface mostra o estado do jogo e a pergunta:
+        </p>
+        <ul>
+            <li>Nível atual;</li>
+            <li>Prémio atual;</li>
+            <li>Patamar de segurança alcançado;</li>
+            <li>Ajudas disponíveis;</li>
+            <li>Texto da pergunta e as quatro opções (A, B, C, D).</li>
+        </ul>
+
+        <h3>3.4. Etapa 4 – Escolha da Ação pelo Jogador</h3>
+        <p>O jogador pode escolher uma de várias ações:</p>
+        <ul>
+            <li>Responder: <code>A</code>, <code>B</code>, <code>C</code> ou <code>D</code>;</li>
+            <li>Usar ajuda:
+                <ul>
+                    <li><code>50</code> → ajuda 50/50;</li>
+                    <li><code>P</code> → ajuda do público;</li>
+                    <li><code>T</code> → ajuda por telefone;</li>
+                </ul>
+            </li>
+            <li>Desistir: <code>D</code>.</li>
+        </ul>
+        <p>
+            A entrada é lida como texto, normalizada (por exemplo, para maiúsculas) e convertida num termo
+            do tipo <code>responder(Letra)</code>, <code>ajuda(Tipo)</code> ou <code>desistir</code>.
+            Caso a ajuda pedida já tenha sido usada, o programa informa o jogador e volta a pedir uma ação válida.
+        </p>
+
+        <h3>3.5. Etapa 5 – Processamento da Ação</h3>
+
+        <div class="box">
+            <div class="box-title">Caso 1 – Desistir</div>
+            <p>Quando o jogador desiste (<code>desistir</code>):</p>
+            <ul>
+                <li>O jogo termina imediatamente;</li>
+                <li>É mostrado o prémio atual;</li>
+                <li>Não há perda para o patamar de segurança; o valor entregue é o prémio acumulado.</li>
+            </ul>
+        </div>
+
+        <div class="box">
+            <div class="box-title">Caso 2 – Responder</div>
+            <p>
+                Quando o jogador responde com uma letra (<code>a</code>, <code>b</code>, <code>c</code>, <code>d</code>),
+                ocorre um ramo de decisão:
+            </p>
+            <ul>
+                <li>Se a letra coincide com a resposta correta → fluxo de resposta correta;</li>
+                <li>Caso contrário → fluxo de resposta incorreta.</li>
+            </ul>
+        </div>
+
+        <h3>3.6. Etapa 6 – Fluxo de Resposta Correta</h3>
+        <p>Quando a resposta é correta:</p>
+        <ol>
+            <li>O programa regista um facto temporário <code>jogador_acertou</code>;</li>
+            <li>Invoca as regras de inferência no módulo <code>logica.pl</code>, em particular o <strong>Modus Ponens</strong>:</li>
+        </ol>
+        <pre><code>implica(resposta_certa, progresso).
+verdadeiro(resposta_certa) :- jogador_acertou.
+
+conclusao(progresso) :-
+    implica(resposta_certa, progresso),
+    verdadeiro(resposta_certa).</code></pre>
+        <ol start="3">
+            <li>Atualiza o prémio atual com o valor associado à pergunta;</li>
+            <li>Se relevante, atualiza o patamar de segurança;</li>
+            <li>Avança recursivamente para o nível seguinte:</li>
+        </ol>
+        <pre><code>ProxNivel is Nivel + 1,
+jogar_nivel(ProxNivel, NovoPremio, PremioSeguro, Ajudas).</code></pre>
+
+        <h3>3.7. Etapa 7 – Fluxo de Resposta Incorreta</h3>
+        <p>Quando a resposta é incorreta:</p>
+        <ol>
+            <li>É registado um facto <code>jogador_errou</code>;</li>
+            <li>Ativa-se o <strong>Modus Tollens</strong>:</li>
+        </ol>
+        <pre><code>implica(resposta_certa, progresso).
+falso(progresso) :- jogador_errou.
+
+conclusao(nao_resposta_certa) :-
+    implica(resposta_certa, progresso),
+    falso(progresso).</code></pre>
+        <ol start="3">
+            <li>O jogo termina imediatamente;</li>
+            <li>O jogador recebe apenas o valor do último patamar de segurança atingido;</li>
+            <li>A interface indica que o jogo terminou com resposta errada.</li>
+        </ol>
+
+        <h3>3.8. Etapa 8 – Uso de Ajudas</h3>
+
+        <div class="box">
+            <div class="box-title">Ajuda 50/50</div>
+            <p>
+                Seleciona a resposta correta e remove duas opções incorretas de forma pseudo-aleatória. O módulo
+                <code>ajudas.pl</code> devolve uma nova lista reduzida de opções que é mostrada ao jogador.
+                Em seguida, volta-se a pedir uma ação (responder ou usar outra ajuda).
+            </p>
+        </div>
+
+        <div class="box">
+            <div class="box-title">Ajuda do Público</div>
+            <p>
+                Gera uma distribuição de percentagens em que a resposta correta obtém um valor mais elevado
+                (por exemplo entre 50% e 80%) e as restantes opções repartem o valor restante. Esta distribuição
+                é mostrada na interface textual, simulando o voto do público.
+            </p>
+        </div>
+
+        <div class="box">
+            <div class="box-title">Ajuda por Telefone</div>
+            <p>
+                Simula a resposta de um amigo. Existe uma probabilidade alta (por exemplo, 80%) de sugerir a
+                resposta correta e uma probabilidade menor de o amigo dizer que não sabe.
+            </p>
+        </div>
+
+        <p>
+            Em qualquer um dos casos, a ajuda utilizada é removida da lista de ajudas disponíveis, garantindo
+            que cada ajuda só pode ser usada uma vez ao longo do jogo.
+        </p>
+
+        <h3>3.9. Etapa 9 – Gestão de Patamares e Prémios</h3>
+        <p>Os patamares de segurança são definidos no módulo <code>perguntas.pl</code>:</p>
+        <pre><code>patamar(5).
+patamar(10).
+patamar(15).</code></pre>
+        <p>
+            Sempre que o jogador atinge um nível que corresponde a um patamar, o valor desse nível passa a ser o
+            prémio mínimo garantido em caso de erro futuro. Esta lógica é integrada no cálculo do
+            <code>PremioSeguro</code> ao entrar em cada nível.
+        </p>
+
+        <h3>3.10. Etapa 10 – Regras Lógicas e Falácia (Modus Mistaken)</h3>
+        <p>
+            Além de Modus Ponens e Modus Tollens, o módulo <code>logica.pl</code> inclui uma regra adicional
+            intencionalmente falaciosa, chamada aqui de <em>Modus Mistaken</em>:
+        </p>
+        <pre><code>verdadeiro(progresso) :- jogador_progrediu.
+
+conclusao_incorreta(resposta_certa) :-
+    implica(resposta_certa, progresso),
+    verdadeiro(progresso).</code></pre>
+        <p>
+            Esta regra formaliza o raciocínio:
+        </p>
+        <div class="box">
+            <div class="box-title">Falácia Modus Mistaken</div>
+            <p>
+                "Se houve progresso, então a resposta era correta."
+            </p>
+            <p>
+                Esta inferência não é válida em lógica clássica e é usada no relatório como exemplo de raciocínio
+                falacioso (pode existir progresso por outros motivos que não uma resposta correta).
+            </p>
+        </div>
+
+        <h3>3.11. Etapa 11 – Condições de Fim de Jogo</h3>
+        <p>O jogo termina em três situações principais:</p>
+        <ul>
+            <li><strong>Vitória total</strong>: o jogador ultrapassa a última pergunta (nível máximo);</li>
+            <li><strong>Derrota</strong>: o jogador erra uma pergunta e recebe o último patamar alcançado;</li>
+            <li><strong>Desistência</strong>: o jogador opta por desistir e recebe o prémio acumulado até ao momento.</li>
+        </ul>
+
+        <h3>3.12. Etapa 12 – Interface Textual e Experiência de Utilizador</h3>
+        <p>
+            O módulo <code>interface.pl</code> encapsula a forma como a informação é apresentada:
+        </p>
+        <ul>
+            <li>ASCII art com o título do jogo;</li>
+            <li>Limpeza de ecrã e organização visual do estado;</li>
+            <li>Apresentação das perguntas e opções de resposta;</li>
+            <li>Mensagens específicas para vitória, derrota e desistência;</li>
+            <li>Apresentação da distribuição do público e da sugestão do telefone.</li>
+        </ul>
+        <p>
+            Esta separação permite evoluir a camada estética (cores, mais ASCII art, animações) sem alterar a lógica
+            central do jogo.
+        </p>
+    </section>
+
+    <section>
+        <span class="tag">Resumo</span>
+        <h2>4. Resumo do Workflow</h2>
+        <div class="ascii">
++-------------------+
+|     jogar/0       |
++---------+---------+
+          |
+          v
++------------------------------+
+| Inicializa ajudas e estado   |
++--------------+---------------+
+               |
+               v
++------------------------------+
+| jogar_nivel(N,P,S,Ajudas)    |
++--------------+---------------+
+               |
+               v
++------------------------------+
+| Carrega pergunta do nível N  |
++--------------+---------------+
+               |
+               v
++------------------------------+
+| Mostra pergunta + estado     |
++--------------+---------------+
+               |
+               v
++------------------------------+
+| Jogador escolhe ação         |
++------+------+----------------+
+       |      |
+       |      +----------------------+
+       |                             |
+     Resposta                    Ajudas
+       |                             |
+       v                             v
++--------------+             +-------------------+
+| Correta?     |----não----->|   Aplica ajuda    |
++------+-------+             +-------------------+
+       |                               |
+      sim                              |
+       |                               |
+       v                               |
++-------------------+                  |
+| Atualiza prémio   |                  |
+| Aplica Modus P.   |                  |
++-------------------+                  |
+       |                               |
+       v                               |
+   Próximo nível &gt;---------------------+
+        </div>
+        <p>
+            Este diagrama resume o ciclo recursivo do jogo: cada nível corresponde a uma iteração do
+            <em>loop</em> de perguntas, onde o jogador decide, responde, usa ajudas ou termina a partida.
+        </p>
+    </section>
+</main>
+
+<footer>
+    Documento de apoio ao relatório técnico – Pipeline / Workflow do jogo "Quem Quer Ser Milionário" em Prolog.
+</footer>
+</body>
+</html>
