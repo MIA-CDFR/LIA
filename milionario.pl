@@ -16,8 +16,7 @@
 :- set_setting(http:cors, [*]).
 
 % Servir arquivos estáticos
-:- http_handler(root(.), http_reply_from_files('public', []), [prefix]).
-
+:- http_handler(root(.), http_reply_from_files('.', []), [prefix]).
 
 % API endpoints
 :- http_handler(root('api/question'), api_question, []).
@@ -274,7 +273,12 @@ iniciar_servidor :-
     Port = 8086,
     format('Servidor na porta ~w...~n', [Port]),
     http_server(http_dispatch, [port(Port)]),
-    format('http://localhost:~w~n', [Port]).
+    % 2. Cria a URL (ajuste o caminho se for diferente de index.html)
+    format(atom(URL), 'http://localhost:~w/index.html', [Port]),
+
+    % 3. Abre o navegador padrão do sistema
+    write('Servidor rodando em: '), write(URL), nl,
+    www_open_url(URL).
 
 
 :- initialization(iniciar_servidor).
