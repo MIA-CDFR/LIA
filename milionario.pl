@@ -18,6 +18,9 @@
 % Servir arquivos estáticos
 :- http_handler(root(.), http_reply_from_files('.', []), [prefix]).
 
+% Música
+:- use_module(library(process)).
+
 % API endpoints
 :- http_handler(root('api/question'), api_question, []).
 :- http_handler(root('api/check'),    api_check,    []).
@@ -26,6 +29,51 @@
 :- dynamic jogador_acertou/0.
 :- dynamic jogador_errou/0.
 
+% Configuração de encoding
+:- encoding(utf8).
+
+% =========================================================
+% Qual o sistema operativo?
+% =========================================================
+sistema(mac) :- 
+    current_prolog_flag(apple, true), !.
+
+sistema(windows) :- 
+    current_prolog_flag(windows, true), !.
+
+% =========================================================
+%  Play Sounds
+% =========================================================
+
+% Windows com ffplay
+tocar_musica(Ficheiro) :-
+    sistema(windows),
+    process_create(
+        './ffmpeg/bin/ffplay.exe',
+        ['-nodisp',
+         '-autoexit',
+         '-loglevel', 'quiet',
+         '-hide_banner',
+         '-nostats',        
+         Ficheiro],
+        [detached(true)]).
+
+% MacOS com afplay
+tocar_musica(Ficheiro) :-
+    sistema(mac),
+    atomic_list_concat(['afplay "', Ficheiro, '" &'], Comando),
+    shell(Comando).
+    
+toca_musica_begin :-
+    tocar_musica('./sons/begin.mp3').
+toca_musica_correct :-
+    tocar_musica('./sons/correct.mp3').
+toca_musica_error :-
+    tocar_musica('./sons/error.mp3').
+toca_musica_question :-
+    tocar_musica('./sons/question.mp3').
+toca_musica_end :-
+    tocar_musica('./sons/end.mp3').    
 
 % =========================================================
 %  Regras de Inferência
@@ -37,7 +85,7 @@ implica(resposta_certa, progresso).
 verdadeiro(resposta_certa) :-
     jogador_acertou.
 
-% Falácia intencional (Modus Mistaken) – para discutir no relatório:
+% Erro intencional (Modus Mistaken)
 % Se progresso então resposta_certa (não é válido em geral)
 verdadeiro(progresso).
 
@@ -80,14 +128,6 @@ perguntas_por_nivel(Nivel, ListaAleatoria) :-
             Lista),
     random_permutation(Lista, ListaAleatoria).
 
-/*
-  perguntas_progressivas(ListaFinal)
-
-  Cria a sequência de 20 perguntas assim:
-  - Primeiro todas as de nível 1 (baralhadas)
-  - Depois nível 2 (baralhadas)
-  - Depois nível 3, nível 4, nível 5
-*/
 perguntas_progressivas(ListaFinal) :-
     perguntas_por_nivel(1, L1),
     perguntas_por_nivel(2, L2),
@@ -96,6 +136,18 @@ perguntas_progressivas(ListaFinal) :-
     perguntas_por_nivel(5, L5),
     append([L1,L2,L3,L4,L5], ListaFinal).
 
+
+% =========================================================
+%  Linhas Coloridas
+% =========================================================
+linha_colorida(Tamanho) :-
+    Cores = [31,32,33,34,35,36],
+    forall(between(1, Tamanho, _),
+           ( random_member(C, Cores),
+             format('\e[~dm==\e[0m', [C])
+           )),
+    nl.
+   
 % =========================================================
 %  Jogo em consola (académico)
 % =========================================================
@@ -109,24 +161,30 @@ perguntas_progressivas(ListaFinal) :-
 
 jogar :-
     perguntas_progressivas(PerguntasProgressivas),
-    writeln('==============================='),
-    writeln('   QUEM QUER SER MILIONARIO   '),
-    writeln('==============================='),
+    linha_colorida(20),
+    linha_colorida(20),
+    writeln('     \e[34mQUEM\e[0m \e[35mQUER\e[0m \e[32mSER\e[0m \e[33mMIALIONARIO\e[0m?'),
+    linha_colorida(20),
+    linha_colorida(20),
+    toca_musica_begin,
     EstadoAjudas = ajudas(nao,nao,nao),
     loop_jogo(PerguntasProgressivas, 0, 0, 0, EstadoAjudas).
 
 loop_jogo([], _, Saldo, _, _) :-
-    format('Fim do jogo! Ganhou €~d.~n', [Saldo]), !.
+    format('\e[32mFim do jogo! Ganhou €~d.~n\e[0m', [Saldo]), 
+    toca_musica_end,
+    !.
 
 loop_jogo([pergunta(Id,Texto,Opcoes,Correta,Nivel,Valor)|Restantes],
           NumPergunta, SaldoAtual, PatamarAtual, EstadoAjudas) :-
 
     NumPergunta1 is NumPergunta + 1,
-    format('~nPergunta ~d (nivel ~d, valendo €~d)~n', [NumPergunta1,Nivel,Valor]),
+    format('\e[35m~nPergunta ~d (nível ~d, a valer €~d)~n\e[0m', [NumPergunta1,Nivel,Valor]),
     writeln(Texto),
     mostra_opcoes(Opcoes),
-    format('Saldo: €~d | Patamar: €~d~n', [SaldoAtual,PatamarAtual]),
-    writeln('Responda com a. b. c. d.  |  desistir.'),
+    format('\e[32mSaldo: €~d \e[0m| \e[34mPatamar: €~d~n\e[0m', [SaldoAtual,PatamarAtual]),
+    toca_musica_question,
+    writeln('\e[35mResponda com a. b. c. d.  \e[0m|  \e[31mdesistir.\e[0m'),
     read(Input),
     Pergunta = pergunta(Id,Texto,Opcoes,Correta,Nivel,Valor),
     processa_entrada(Input,
@@ -144,7 +202,8 @@ processa_entrada(desistir,
                  SaldoAtual,
                  _PatamarAtual,
                  _EstadoAjudas) :-
-    format('Desistiu com €~d. Ate a proxima!~n', [SaldoAtual]),
+    format('\e[31mDesistiu com €~d. Até à próxima!~n\e[0m', [SaldoAtual]),
+    toca_musica_end,
     !.
 
 processa_entrada(Resp,
@@ -162,16 +221,19 @@ processa_entrada(Resp,
             conclusao(progresso),   % Modus Ponens
             NovoSaldo is SaldoAtual + Valor,
             atualiza_patamar(NumPergunta, NovoSaldo, PatamarAtual, NovoPatamar),
-            format('Resposta correta! +€~d. Saldo atual: €~d.~n',
+            format('\e[32mResposta correta! +€~d. Saldo atual: €~d.~n\e[0m',
                    [Valor,NovoSaldo]),
+            toca_musica_correct,                   
             loop_jogo(Restantes, NumPergunta, NovoSaldo, NovoPatamar, EstadoAjudas)
         ;   assertz(jogador_errou),
             conclusao(nao_resposta_certa),  % Modus Tollens
-            format('Resposta errada. Fica com o patamar: €~d.~n',
+            format('\e[31mResposta errada. Fica com o patamar: €~d.~n\e[0m',
                    [PatamarAtual]),
+                   toca_musica_error,
+                   toca_musica_end,
             !
         )
-    ;   writeln('Entrada invalida. Tente novamente.'),
+    ;   writeln('\e[36mEntrada inválida. Tente novamente.\e[0m'),
         loop_jogo([pergunta(Id,Texto,Opcoes,Correta,Nivel,Valor)|Restantes],
                   NumPergunta-1,
                   SaldoAtual,
@@ -277,7 +339,7 @@ iniciar_servidor :-
     format(atom(URL), 'http://localhost:~w/index.html', [Port]),
 
     % 3. Abre o navegador padrão do sistema
-    write('Servidor rodando em: '), write(URL), nl,
+    write('Servidor a correr em: '), write(URL), nl,
     www_open_url(URL).
 
 

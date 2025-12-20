@@ -31,6 +31,12 @@ tocar_musica(Ficheiro) :-
     atomic_list_concat(['powershell -c (New-Object Media.SoundPlayer "', Ficheiro, '").PlaySync()'], Comando),
     shell(Comando).
 
+
+tocar_musica111 :-
+    sistema(windows),
+    atomic_list_concat(['powershell -c (New-Object Media.SoundPlayer "', '[uri]""file:///D:/MIA_prolog/milionario1/sons/begin.mp3""', '").PlaySync()'], Comando),
+    shell(Comando).
+
 tocar_musica(Ficheiro) :-
     sistema(linux),
     atomic_list_concat(['paplay "', Ficheiro, '" &'], Comando),

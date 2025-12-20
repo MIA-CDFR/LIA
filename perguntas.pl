@@ -2,12 +2,12 @@
 
 /*
 pergunta(
-    Id,
-    Texto,
-    [a-OpA, b-OpB, c-OpC, d-OpD],
-    RespostaCorreta,  % a | b | c | d
-    Nivel,            % 1..5
-    Valor             % euros
+    Id, => identificador unico da pergunta
+    Texto, => texto da pergunta
+    [a-OpA, b-OpB, c-OpC, d-OpD], => opcoes de resposta
+    RespostaCorreta,  % a | b | c | d => resposta correta
+    Nivel,            % 1..5 => nivel de dificuldade
+    Valor             % euros => valor em euros da pergunta
 ).
 */
 
@@ -17,24 +17,24 @@ pergunta(1,
     b, 1, 100).
 
 pergunta(2,
-    'A capital de Portugal e:',
+    'Qual e a capital de Portugal?',
     [a-'Porto', b-'Lisboa', c-'Coimbra', d-'Faro'],
     b, 1, 200).
 
 pergunta(3,
-    'Qual destes e um mamifero?',
+    'Qual destes animais e um mamifero?',
     [a-'Tubarao', b-'Sardinha', c-'Golfinho', d-'Polvo'],
     c, 1, 300).
 
 pergunta(4,
-    'Qual o planeta conhecido como Planeta Vermelho?',
+    'Qual e o planeta conhecido como Planeta Vermelho?',
     [a-'Venus', b-'Marte', c-'Jupiter', d-'Mercurio'],
     b, 1, 400).
 
 pergunta(5,
-    'Em que continente fica o Brasil?',
+    'Em que continente fica Portugal?',
     [a-'Europa', b-'Africa', c-'America do Sul', d-'Asia'],
-    c, 1, 500).
+    a, 1, 500).
 
 pergunta(6,
     'Quem escreveu "Os Lusiadas"?',
@@ -47,7 +47,7 @@ pergunta(7,
     a, 2, 2000).
 
 pergunta(8,
-    'Qual destes e um numero primo?',
+    'Qual destes numeros e primo?',
     [a-'9', b-'15', c-'17', d-'21'],
     c, 2, 3000).
 
