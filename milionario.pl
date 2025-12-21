@@ -2,6 +2,8 @@
 :- use_module(library(random)).
 :- use_module(library(lists)).
 
+:- consult('logo.pl').
+
 % HTTP
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
@@ -73,7 +75,9 @@ toca_musica_error :-
 toca_musica_question :-
     tocar_musica('./sons/question.mp3').
 toca_musica_end :-
-    tocar_musica('./sons/end.mp3').    
+    tocar_musica('./sons/end.mp3'). 
+toca_musica_winner :-
+    tocar_musica('./sons/winner.mp3').       
 
 % =========================================================
 %  Regras de Inferência
@@ -149,30 +153,27 @@ linha_colorida(Tamanho) :-
     nl.
    
 % =========================================================
-%  Jogo em consola (académico)
+%  Jogo modo de consola
 % =========================================================
 
 /*
   Predicado principal:
-
     ?- jogar.
-
 */
 
 jogar :-
+    writeln('QUEM QUER SER MIALIONARIO?'),
+    apresenta_logo,
+    writeln('Mialionário, by Carlos, Diego, Filipa & Rui, UMinho - MIA - LIA @2025/2026.'),
     perguntas_progressivas(PerguntasProgressivas),
-    linha_colorida(20),
-    linha_colorida(20),
-    writeln('     \e[34mQUEM\e[0m \e[35mQUER\e[0m \e[32mSER\e[0m \e[33mMIALIONARIO\e[0m?'),
-    linha_colorida(20),
-    linha_colorida(20),
     toca_musica_begin,
     EstadoAjudas = ajudas(nao,nao,nao),
     loop_jogo(PerguntasProgressivas, 0, 0, 0, EstadoAjudas).
 
 loop_jogo([], _, Saldo, _, _) :-
+    apresenta_winner,
     format('\e[32mFim do jogo! Ganhou €~d.~n\e[0m', [Saldo]), 
-    toca_musica_end,
+    toca_musica_winner,
     !.
 
 loop_jogo([pergunta(Id,Texto,Opcoes,Correta,Nivel,Valor)|Restantes],

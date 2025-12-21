@@ -1,6 +1,8 @@
 swipl milionario.pl
 
 
+ascii art
+https://www.asciiart.eu/image-to-ascii
 
 sons:
 https://voicebot.su/pt/category/quem-quer-ser-milionario/
