@@ -17,8 +17,8 @@ pergunta(1,
     b, 1, 100).
 
 pergunta(2,
-    'Qual e a capital de Portugal?',
-    [a-'Porto', b-'Lisboa', c-'Coimbra', d-'Faro'],
+    'Em Prolog, o que e []?',
+    [a-'Um atomo', b-'Uma lista vazia', c-'Um predicado', d-'Uma variavel'],
     b, 1, 200).
 
 pergunta(3,

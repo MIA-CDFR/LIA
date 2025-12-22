@@ -2,17 +2,15 @@
 :- use_module(library(random)).
 :- use_module(library(lists)).
 
-:- consult('logo.pl').
-
 % HTTP
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
-:- use_module(library(http/json)).
 :- use_module(library(http/http_files)).
 :- use_module(library(http/http_cors)).
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_header)).
+:- use_module(library(json)).
 
 % Configurar CORS
 :- set_setting(http:cors, [*]).
@@ -22,6 +20,9 @@
 
 % Música
 :- use_module(library(process)).
+
+% Logos
+:- consult('logo.pl').
 
 % API endpoints
 :- http_handler(root('api/question'), api_question, []).
@@ -79,6 +80,22 @@ toca_musica_end :-
 toca_musica_winner :-
     tocar_musica('./sons/winner.mp3').       
 
+% =========================================================
+%  Relogio
+% =========================================================
+verifica_segundos(Segundos) :-
+    format('\e[36mTempo utilizado: ~d segundos\e[0m~n', [Segundos]),
+    (   Segundos < 30
+    ->  true
+    ;   format('Erro: segundos (~w) devem ser menores que 30.~n', [Segundos]),
+        fail
+    ).
+
+difftime_desde(TimestampInicial) :-
+    get_time(Now),
+    Diff is floor(Now - TimestampInicial),
+    Segundos is Diff mod 60,
+    verifica_segundos(Segundos).
 % =========================================================
 %  Regras de Inferência
 % =========================================================
@@ -181,6 +198,7 @@ loop_jogo([pergunta(Id,Texto,Opcoes,Correta,Nivel,Valor)|Restantes],
 
     NumPergunta1 is NumPergunta + 1,
     format('\e[35m~nPergunta ~d (nível ~d, a valer €~d)~n\e[0m', [NumPergunta1,Nivel,Valor]),
+    get_time(TempoAgora),
     writeln(Texto),
     mostra_opcoes(Opcoes),
     format('\e[32mSaldo: €~d \e[0m| \e[34mPatamar: €~d~n\e[0m', [SaldoAtual,PatamarAtual]),
@@ -194,7 +212,8 @@ loop_jogo([pergunta(Id,Texto,Opcoes,Correta,Nivel,Valor)|Restantes],
                      NumPergunta1,
                      SaldoAtual,
                      PatamarAtual,
-                     EstadoAjudas).
+                     EstadoAjudas,
+                     TempoAgora).
 
 processa_entrada(desistir,
                  _Pergunta,
@@ -202,7 +221,21 @@ processa_entrada(desistir,
                  _NumPergunta,
                  SaldoAtual,
                  _PatamarAtual,
-                 _EstadoAjudas) :-
+                 _EstadoAjudas,
+                 _TempoAgora) :-
+    format('\e[31mDesistiu com €~d. Até à próxima!~n\e[0m', [SaldoAtual]),
+    parar_relogio,
+    toca_musica_end,
+    !.
+
+processa_entrada(desistir,
+                 _Pergunta,
+                 _Restantes,
+                 _NumPergunta,
+                 SaldoAtual,
+                 _PatamarAtual,
+                 _EstadoAjudas,
+                 _TempoAgora) :-
     format('\e[31mDesistiu com €~d. Até à próxima!~n\e[0m', [SaldoAtual]),
     toca_musica_end,
     !.
@@ -213,10 +246,19 @@ processa_entrada(Resp,
                  NumPergunta,
                  SaldoAtual,
                  PatamarAtual,
-                 EstadoAjudas) :-
+                 EstadoAjudas,
+                 TempoAgora) :-
     ( member(Resp, [a,b,c,d]) ->
         retractall(jogador_acertou),
         retractall(jogador_errou),
+        (\+difftime_desde(TempoAgora)  ->
+            assertz(jogador_errou),
+            conclusao(nao_resposta_certa),  % Modus Tollens
+            format('\e[31mTEMPO ESGOTADO! Fica com o patamar: €~d.~n\e[0m',
+                   [PatamarAtual]),
+                   toca_musica_error,
+                   toca_musica_end, !
+         ;
         ( Resp == Correta ->
             assertz(jogador_acertou),
             conclusao(progresso),   % Modus Ponens
@@ -240,7 +282,7 @@ processa_entrada(Resp,
                   SaldoAtual,
                   PatamarAtual,
                   EstadoAjudas)
-    ).
+    )).
 
 mostra_opcoes([]).
 mostra_opcoes([Letra-Texto | Resto]) :-
