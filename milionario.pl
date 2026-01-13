@@ -224,7 +224,6 @@ processa_entrada(desistir,
                  _EstadoAjudas,
                  _TempoAgora) :-
     format('\e[31mDesistiu com €~d. Até à próxima!~n\e[0m', [SaldoAtual]),
-    parar_relogio,
     toca_musica_end,
     !.
 

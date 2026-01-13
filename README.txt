@@ -1,5 +1,8 @@
 swipl milionario.pl
 
+working_directory(_, 'D:/GIT/MIA/LIA').
+reconsult('milionario.pl').
+
 
 ascii art
 https://www.asciiart.eu/image-to-ascii
